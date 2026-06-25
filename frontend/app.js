@@ -322,6 +322,9 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch(apiEndpoint, {
                 method: "POST",
+                headers: {
+                    "Bypass-Tunnel-Reminder": "true"
+                },
                 body: formData
             });
             
@@ -378,7 +381,12 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch(e) {}
 
         try {
-            const response = await fetch(`${baseUrl}/health`, { method: "GET" });
+            const response = await fetch(`${baseUrl}/health`, {
+                method: "GET",
+                headers: {
+                    "Bypass-Tunnel-Reminder": "true"
+                }
+            });
             if (response.ok) {
                 const data = await response.json();
                 isApiOnline = true;
