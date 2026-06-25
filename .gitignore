@@ -1,0 +1,33 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Large weights and checkpoints
+*.pt
+*.pth
+yolov8n.pt
+models/generator.pt
+
+# Databases and temporary execution caches
+iris.db
+data/processed/
+fastapi_server.log
+localtunnel.log
+
+# IDE settings
+.vscode/
+.idea/
+.agents/
+.gemini/
+antigravity-ide/

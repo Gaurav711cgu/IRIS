@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRIS | Satellite Thermal Super-Resolution & Colorization</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Top Cyber Navbar -->
+    <header class="navbar">
+        <div class="nav-logo">
+            <span class="logo-glow">IRIS</span>
+            <span class="logo-subtitle">ISRO BAH 2026</span>
+        </div>
+        
+        <!-- Tab Navigation Links -->
+        <nav class="nav-links">
+            <button class="nav-tab active" data-target="workspace-tab">Workspace</button>
+            <button class="nav-tab" data-target="pipeline-tab">Pipeline Steps</button>
+            <button class="nav-tab" data-target="loss-tab">Loss Weight Visualizer</button>
+            <button class="nav-tab" data-target="api-tab">Dev APIs &amp; DB</button>
+            <button class="nav-tab" data-target="glossary-tab">Glossary &amp; Reference</button>
+        </nav>
+
+        <div class="nav-actions">
+            <div id="backend-status" class="status-indicator online">
+                <span class="status-dot"></span>
+                <span id="status-text">GPU Offline (Mock Active)</span>
+            </div>
+            <button id="config-btn" class="icon-btn" title="API Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="dashboard">
+        
+        <!-- SECTION: WORKSPACE TAB -->
+        <div id="workspace-tab" class="tab-content active">
+            <!-- Statistics Telemetry Grid -->
+            <section class="telemetry-bar">
+                <div class="tel-card">
+                    <span class="tel-label">Super-Resolution</span>
+                    <span class="tel-val">2× Upscaling</span>
+                    <span class="tel-detail">200m to 100m Grid</span>
+                </div>
+                <div class="tel-card">
+                    <span class="tel-label">Active Backbone</span>
+                    <span class="tel-val">ESRGAN (RRDB)</span>
+                    <span class="tel-detail">Residual Trunk Network</span>
+                </div>
+                <div class="tel-card">
+                    <span class="tel-label">Downstream Evaluator</span>
+                    <span class="tel-val">YOLOv8</span>
+                    <span class="tel-detail">Object Detection mAP Uplift</span>
+                </div>
+                <div class="tel-card">
+                    <span class="tel-label">Generalization</span>
+                    <span class="tel-val">INSAT-3D TIR1</span>
+                    <span class="tel-detail">Zero-Shot MOSDAC H5</span>
+                </div>
+            </section>
+
+            <div class="workspace-grid">
+                <!-- Control Panel -->
+                <section class="control-panel">
+                    <div class="card neon-border">
+                        <h2 class="card-title">Uplink Control</h2>
+                        
+                        <!-- Mode Selector -->
+                        <div class="form-group">
+                            <label class="input-label">Processing Source</label>
+                            <div class="toggle-group">
+                                <button id="mode-demo-btn" class="toggle-btn active">Demo (Mock Data)</button>
+                                <button id="mode-live-btn" class="toggle-btn">Live GPU API</button>
+                            </div>
+                        </div>
+
+                        <!-- File Uploader -->
+                        <div id="uploader-container" class="form-group hidden">
+                            <label class="input-label">Upload Satellite Stack (.npy)</label>
+                            <div id="dropzone" class="dropzone">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 upload-icon">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                                </svg>
+                                <p class="dropzone-text">Drag & drop 6-channel stack or <span>browse files</span></p>
+                                <input type="file" id="file-input" accept=".npy" class="hidden-input">
+                            </div>
+                            <div id="file-info" class="file-info hidden">
+                                <span class="file-name">delhi_ncr_input.npy</span>
+                                <button id="remove-file-btn" class="text-btn">Remove</button>
+                            </div>
+                        </div>
+
+                        <!-- Demo Scenes -->
+                        <div id="demo-container" class="form-group">
+                            <label class="input-label">Select Demo Scenario</label>
+                            <select id="demo-selector" class="select-input">
+                                <option value="delhi">Delhi-NCR (Landsat 8/9 &amp; ESA Cover)</option>
+                                <option value="insat">INSAT-3D MOSDAC (Zero-Shot TIR1)</option>
+                            </select>
+                            <button id="load-demo-btn" class="btn secondary-btn btn-full">Load Demo Scene</button>
+                        </div>
+
+                        <hr class="card-separator">
+
+                        <!-- YOLO Bounding Box Settings -->
+                        <div class="form-group">
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="yolo-toggle" checked>
+                                <label for="yolo-toggle" class="checkbox-label">Overlay YOLOv8 Bounding Boxes</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="input-label">YOLO Confidence Threshold: <span id="yolo-conf-val">0.25</span></label>
+                            <input type="range" id="yolo-conf" min="0.1" max="1.0" step="0.05" value="0.25" class="slider-input">
+                        </div>
+
+                        <button id="process-btn" class="btn primary-btn btn-full" style="opacity: 1; pointer-events: auto;">Load Selected Scenario</button>
+                    </div>
+                </section>
+
+                <!-- Visualizer Panel -->
+                <section class="visualizer-panel">
+                    <div class="card visualizer-card">
+                        <div class="visualizer-header">
+                            <h2 class="card-title">Multispectral Comparison</h2>
+                            <div class="visualizer-modes">
+                                <span class="vis-badge badge-thermal">Raw Thermal</span>
+                                <span class="vis-badge badge-rgb">Pseudo-RGB</span>
+                            </div>
+                        </div>
+
+                        <!-- Slider Container -->
+                        <div class="slider-wrapper">
+                            <div id="comparison-slider" class="comparison-slider">
+                                <!-- Background Image (Raw Thermal) -->
+                                <img id="image-thermal" src="assets/raw_thermal.png" alt="Raw Thermal Satellite Image" class="slider-image">
+                                
+                                <!-- Foreground Clipped Image (Colorized Pseudo-RGB) -->
+                                <div id="clipped-container" class="clipped-container">
+                                    <img id="image-colorized" src="assets/colorized_output.png" alt="Super-Resolved Colorized Satellite Image" class="slider-image">
+                                    <!-- YOLO SVG Bounding Box Canvas -->
+                                    <svg id="yolo-canvas" class="yolo-canvas" viewBox="0 0 154 154" preserveAspectRatio="none"></svg>
+                                </div>
+
+                                <!-- Swipe Controller Handle -->
+                                <div id="slider-handle" class="slider-handle">
+                                    <div class="handle-line"></div>
+                                    <div class="handle-button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                        </svg>
+                                    </div>
+                                    <div class="handle-line"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Telemetry & Analytics Dashboard -->
+            <section class="analytics-section">
+                <div class="workspace-grid">
+                    <!-- YOLO target detection summary -->
+                    <div class="card neon-border">
+                        <h3 class="card-title">YOLOv8 Target Statistics</h3>
+                        <div class="analytics-placeholder" id="yolo-stats-container">
+                            <div class="stat-row">
+                                <span class="stat-name">Detected Buildings</span>
+                                <span id="stat-buildings" class="stat-number">12</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-name">Detected Roads / Infrastructure</span>
+                                <span id="stat-roads" class="stat-number">5</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-name">Vegetation Patches</span>
+                                <span id="stat-vegetation" class="stat-number">8</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-name">Water Bodies</span>
+                                <span id="stat-water" class="stat-number">2</span>
+                            </div>
+                            <div class="stat-row total-row">
+                                <span class="stat-name">Total Targets Detected</span>
+                                <span id="stat-total" class="stat-number">27</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indices analytics -->
+                    <div class="card neon-border">
+                        <h3 class="card-title">Spectral Indices Analysis</h3>
+                        <div class="indices-container">
+                            <div class="index-box">
+                                <div class="index-header">
+                                    <span class="index-name">NDVI Range</span>
+                                    <span id="ndvi-range-val" class="index-score text-green">+0.22 to +0.81</span>
+                                </div>
+                                <div class="index-bar-wrapper">
+                                    <div class="index-bar ndvi-bar" style="left: 61%; width: 30%;"></div>
+                                </div>
+                                <div class="index-labels">
+                                    <span>-1.0 (Bare)</span>
+                                    <span>0.0</span>
+                                    <span>+1.0 (Forest)</span>
+                                </div>
+                            </div>
+
+                            <div class="index-box">
+                                <div class="index-header">
+                                    <span class="index-name">NDWI Range</span>
+                                    <span id="ndwi-range-val" class="index-score text-blue">-0.45 to -0.10</span>
+                                </div>
+                                <div class="index-bar-wrapper">
+                                    <div class="index-bar ndwi-bar" style="left: 27%; width: 18%;"></div>
+                                </div>
+                                <div class="index-labels">
+                                    <span>-1.0 (Dry)</span>
+                                    <span>0.0</span>
+                                    <span>+1.0 (Water)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SECTION: PIPELINE STEPS TAB -->
+        <div id="pipeline-tab" class="tab-content">
+            <section class="pipeline-section-container">
+                <div class="card neon-border">
+                    <h2 class="card-title">Interactive Core Processing Pipeline</h2>
+                    <p class="section-desc">Click on any pipeline block below to inspect its remote sensing implementation details, engineering rationale, and source code snippet.</p>
+                    
+                    <div class="pipeline">
+                        <div class="pipeline-step" data-step="1">
+                            <div class="p-num">STEP 1</div>
+                            <div class="p-title">Data Extraction</div>
+                            <div class="p-sub">USGS/GEE Band Stack<br>Radiometric Calibration</div>
+                            <div class="p-tag">GEE / USGS</div>
+                        </div>
+                        <div class="pipeline-step" data-step="2">
+                            <div class="p-num">STEP 2</div>
+                            <div class="p-title">Physics Calibration</div>
+                            <div class="p-sub">Convert DN to Kelvin<br>Min-Max Normalization</div>
+                            <div class="p-tag">Landsat Guides</div>
+                        </div>
+                        <div class="pipeline-step" data-step="3">
+                            <div class="p-num">STEP 3</div>
+                            <div class="p-title">Indices &amp; Segments</div>
+                            <div class="p-sub">ESA Land Cover Masks<br>NDVI/NDWI Computation</div>
+                            <div class="p-tag">ESA WorldCover</div>
+                        </div>
+                        <div class="pipeline-step" data-step="4">
+                            <div class="p-num">STEP 4</div>
+                            <div class="p-title">Super-Res + Colorize</div>
+                            <div class="p-sub">ESRGAN Joint Encoder<br>PixelShuffle Decoder</div>
+                            <div class="p-tag">IRIS Neural Net</div>
+                        </div>
+                        <div class="pipeline-step" data-step="5">
+                            <div class="p-num">STEP 5</div>
+                            <div class="p-title">Geospatial Mapping</div>
+                            <div class="p-sub">Output georeferenced TIF<br>CRS Spatial Affine Headers</div>
+                            <div class="p-tag">GDAL/Rasterio</div>
+                        </div>
+                        <div class="pipeline-step" data-step="6">
+                            <div class="p-num">STEP 6</div>
+                            <div class="p-title">Downstream Eval</div>
+                            <div class="p-sub">YOLOv8 mAP Uplift<br>MOSDAC Zero-Shot H5</div>
+                            <div class="p-tag">Validation Core</div>
+                        </div>
+                    </div>
+
+                    <!-- Shared pipeline detail panel -->
+                    <div class="pd-wrap" id="pd-wrap">
+                        <div class="pd-inner" id="pd-inner">
+                            <div class="empty-state">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 9.152c.582.448 1.148.89 1.676 1.345m-1.676-1.345c-.528-.407-1.077-.85-1.63-1.304m3.306 2.649c-.528-.407-1.077-.85-1.63-1.304m-3.306-2.649c.582.448 1.148.89 1.676 1.345m0-1.345V6.75M12 9v1.25m-3.75 3.75h7.5m-7.5-6h7.5M3 5.25h18M3 18.75h18" />
+                                </svg>
+                                <p>Click any pipeline step block above to explore its complete remote sensing architecture.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SECTION: LOSS WEIGHT VISUALIZER TAB -->
+        <div id="loss-tab" class="tab-content">
+            <div class="workspace-grid">
+                <!-- Sliders and formula -->
+                <section class="loss-visualizer-container">
+                    <div class="card neon-border">
+                        <h2 class="card-title">Loss Function — Interactive Weight Tuning</h2>
+                        <p class="section-desc">Adjust the coefficients (&lambda;) below to simulate how the model balances absolute radiometric precision, visual realism, and boundary classification during training.</p>
+                        
+                        <div class="lv-wrap">
+                            <div class="lv-eyebrow">Interactive Parameters</div>
+                            <div class="lv-grid">
+                                <div class="lv-row">
+                                    <div class="lv-label">
+                                        <span class="lv-name">&lambda;&sup1; — L1 Pixel Reconstruction</span>
+                                        <span class="lv-badge" id="lv-b1">10</span>
+                                    </div>
+                                    <input class="lv-slider" type="range" id="lv-s1" min="0" max="20" step="1" value="10">
+                                </div>
+                                <div class="lv-row">
+                                    <div class="lv-label">
+                                        <span class="lv-name">&lambda;&sup2; — L_VGG Perceptual Detail</span>
+                                        <span class="lv-badge" id="lv-b2">1.0</span>
+                                    </div>
+                                    <input class="lv-slider" type="range" id="lv-s2" min="0" max="4" step="0.1" value="1">
+                                </div>
+                                <div class="lv-row">
+                                    <div class="lv-label">
+                                        <span class="lv-name">&lambda;&sup3; — L_GAN Adversarial Reality</span>
+                                        <span class="lv-badge" id="lv-b3">1.0</span>
+                                    </div>
+                                    <input class="lv-slider" type="range" id="lv-s3" min="0" max="4" step="0.1" value="1">
+                                </div>
+                                <div class="lv-row">
+                                    <div class="lv-label">
+                                        <span class="lv-name">&lambda;&sup4; — L_SEM Lov&aacute;sz Semantic</span>
+                                        <span class="lv-badge" id="lv-b4">5.0</span>
+                                    </div>
+                                    <input class="lv-slider" type="range" id="lv-s4" min="0" max="10" step="0.1" value="5">
+                                </div>
+                            </div>
+
+                            <div class="lv-formula-card">
+                                <div class="lv-formula" id="lv-formula">L_total = <span class="lv-c" id="lv-f1">10</span>&middot;L1 + <span class="lv-c" id="lv-f2">1.0</span>&middot;L_VGG + <span class="lv-c" id="lv-f3">1.0</span>&middot;L_GAN + <span class="lv-c" id="lv-f4">5.0</span>&middot;L_SEM</div>
+                            </div>
+
+                            <div class="lv-effects" id="lv-effects">
+                                <div class="lv-eff ok" id="lv-e1"><span class="lv-term">L1</span><span class="lv-wb" id="lv-w1">10</span><span class="lv-et" id="lv-t1">Balanced — recovers spatial structure without over-smoothing (recommended)</span></div>
+                                <div class="lv-eff ok" id="lv-e2"><span class="lv-term">L_VGG</span><span class="lv-wb" id="lv-w2">1.0</span><span class="lv-et" id="lv-t2">Perceptual quality good — VGG conv3_3/conv4_3 features active (recommended)</span></div>
+                                <div class="lv-eff ok" id="lv-e3"><span class="lv-term">L_GAN</span><span class="lv-wb" id="lv-w3">1.0</span><span class="lv-et" id="lv-t3">Adversarial training balanced — PatchGAN discriminator effective (recommended)</span></div>
+                                <div class="lv-eff ok" id="lv-e4"><span class="lv-term">L_SEM</span><span class="lv-wb" id="lv-w4">5.0</span><span class="lv-et" id="lv-t4">Semantic constraint active — ESA WorldCover mask enforced (recommended)</span></div>
+                            </div>
+                            <div class="lv-iris"><strong>IRIS Optimum Config:</strong> &lambda;&sup1; = 10, &lambda;&sup2; = 1, &lambda;&sup3; = 1, &lambda;&sup4; = 5 — Ensures stable GAN convergence without mode collapse.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Model architecture panel -->
+                <section class="architecture-panel">
+                    <div class="card neon-border">
+                        <h2 class="card-title">Joint Generator Architecture (IRIS-G)</h2>
+                        <p class="section-desc">Single Encoder with shared deep features feeding dual decoders simultaneously, preventing interpolation errors.</p>
+                        
+                        <div class="arch">
+                            <div class="arch-title">Single Encoder &rarr; Dual Decoders</div>
+                            <div class="arch-flow">
+                                <div class="arch-node">
+                                    <div>
+                                        <div class="arch-node-name">Radiometric input branch</div>
+                                        <div class="arch-node-detail">Normalised Thermal B10 [B, 1, 256, 256] in [-1,1]</div>
+                                    </div>
+                                    <span class="tag tag-cyan">Float32</span>
+                                </div>
+                                <div class="arch-node">
+                                    <div>
+                                        <div class="arch-node-name">Spatial index branch</div>
+                                        <div class="arch-node-detail">NDVI &amp; NDWI guides + Optical B2/B3/B4 [B, 5, 256, 256]</div>
+                                    </div>
+                                    <span class="tag tag-blue">Co-registered</span>
+                                </div>
+                                <div class="arch-arrow">Concat channel dimension &darr;</div>
+                                <div class="arch-node">
+                                    <div>
+                                        <div class="arch-node-name">Shared feature trunk: 8 &times; RRDB blocks</div>
+                                        <div class="arch-node-detail">Residual-in-Residual Dense Blocks. Dilated convolutions (d=1,2,4). No BatchNorm (avoids grid noise).</div>
+                                    </div>
+                                    <span class="tag tag-violet">~8.4M params</span>
+                                </div>
+                                <div class="arch-arrow">Split into joint decoder heads &darr;</div>
+                                <div class="arch-split-row">
+                                    <div class="arch-node split-node">
+                                        <div class="arch-node-name">Upscaling Head (2&times; SR)</div>
+                                        <div class="arch-node-detail">PixelShuffle upscaling to native 100m.</div>
+                                    </div>
+                                    <div class="arch-node split-node">
+                                        <div class="arch-node-name">Colorisation Head</div>
+                                        <div class="arch-node-detail">UNet skip links &amp; transposed convs to pseudo-RGB.</div>
+                                    </div>
+                                </div>
+                                <div class="arch-arrow">Downstream object validation &darr;</div>
+                                <div class="arch-node">
+                                    <div>
+                                        <div class="arch-node-name">PatchGAN Discriminator (70&times;70 patches)</div>
+                                        <div class="arch-node-detail">Evaluates local texture realism. Active in training only.</div>
+                                    </div>
+                                    <span class="tag tag-red">Training only</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Parameters tuning guide -->
+            <section class="tuning-guide-section" style="margin-top: 1.5rem;">
+                <div class="card neon-border">
+                    <h3 class="card-title">Parameter Optimization Reference Guide</h3>
+                    <div class="grid-2" style="margin-top: 1rem;">
+                        <div class="tuning-card">
+                            <h4>&lambda;&sup1; &middot; L1 Loss (Pixel-level Reconstruction)</h4>
+                            <p>Enforces absolute temperature calibration. If too low (&lt; 5), the model outputs physically inaccurate temperatures. If too high (&gt; 15), outputs become blurry averages of the dataset.</p>
+                        </div>
+                        <div class="tuning-card">
+                            <h4>&lambda;&sup2; &middot; L_VGG Loss (Perceptual Detail)</h4>
+                            <p>Measures structural texture alignment using pre-trained VGG-19 conv3_3 features. Keeps visual elements looking structurally cohesive rather than disjointed pixels.</p>
+                        </div>
+                        <div class="tuning-card">
+                            <h4>&lambda;&sup3; &middot; L_GAN Loss (Adversarial Realism)</h4>
+                            <p>Forces the Generator to synthesize high-frequency surface textures (like agricultural lines or concrete grids) by competing with the PatchGAN discriminator.</p>
+                        </div>
+                        <div class="tuning-card">
+                            <h4>&lambda;&sup4; &middot; L_SEM Loss (Lov&aacute;sz Semantic Guard)</h4>
+                            <p>Uses the ESA land cover labels to penalize temperature bleeding across logical borders (e.g. preventing cold water temperatures from leaking into adjacent warm barrens).</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SECTION: API & DB TAB -->
+        <div id="api-tab" class="tab-content">
+            <!-- Database and Docker -->
+            <div class="workspace-grid">
+                <!-- Database Grid -->
+                <section class="database-section">
+                    <div class="card neon-border">
+                        <h2 class="card-title">Integrated Storage &amp; Database Architecture</h2>
+                        <p class="section-desc">Modular caching and persistence configuration optimized for large multispectral rasters.</p>
+                        
+                        <div class="db-grid">
+                            <div class="db-card">
+                                <div class="db-icon">🗂️</div>
+                                <div class="db-name">Object Storage</div>
+                                <div class="db-type">AWS S3 / Azure Blobs</div>
+                                <div class="db-desc">Stores raw multi-band TIFFs and model parameters (.pt). Dataloaders leverage streaming COGs (Cloud Optimized GeoTIFFs) to load patches asynchronously on the fly.</div>
+                            </div>
+                            <div class="db-card">
+                                <div class="db-icon">🗃️</div>
+                                <div class="db-name">SQL Database</div>
+                                <div class="db-type">Supabase Postgres / SQLite</div>
+                                <div class="db-desc">Saves processing logs, NDVI/NDWI telemetry indexes, and YOLO classification results (coordinate bounds). Built-in SQLAlchemy engine switches automatically.</div>
+                            </div>
+                            <div class="db-card">
+                                <div class="db-icon">⚡</div>
+                                <div class="db-name">In-Memory Cache</div>
+                                <div class="db-type">Redis Cloud / Local Upstash</div>
+                                <div class="db-desc">Caches processed image buffers using MD5 payload checksums as cache keys. Cuts colorization response times from ~3s to sub-5 milliseconds for repeat tiles.</div>
+                            </div>
+                        </div>
+
+                        <!-- DB Connection Flow Diagram -->
+                        <div class="db-flow-card" style="margin-top: 1.5rem;">
+                            <h4>Data &amp; Request Flow Diagram</h4>
+                            <pre class="flow-pre">
+[GeoTIFF / Stack Input] &rarr; [MD5 Hash Calculated] &rarr; [Redis Cache Lookup]
+                                                     │
+                             ┌───────────────────────┴───────────────────────┐
+                             &darr; Cache Hit (sub-5ms)                            &darr; Cache Miss (Process)
+                     [Stream Cached PNG]                               [Run Model Inference]
+                                                                             │
+                                                                             &darr;
+                                                                 [Extract Telemetry Indices]
+                                                                 [Execute YOLO Object Tracker]
+                                                                             │
+                                                                             &darr;
+                                                                 [Commit Scene Logs to SQL]
+                                                                 [Save Colorized PNG to Cache]
+                                                                             │
+                                                                             &darr;
+                                                                 [Stream Output Image]
+                            </pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Docker and Deployment Setup -->
+                <section class="docker-section">
+                    <div class="card neon-border">
+                        <h2 class="card-title">Production Docker &amp; Compose Registry</h2>
+                        <p class="section-desc">Configuration files to compile and scale the GPU-accelerated backend on local servers or cloud clusters (GCP/AWS).</p>
+                        
+                        <div class="dtab-bar" id="docker-tabs">
+                            <button class="dtab-btn dt-on" data-tab="dockerfile">Dockerfile</button>
+                            <button class="dtab-btn" data-tab="requirements">requirements.txt</button>
+                            <button class="dtab-btn" data-tab="compose">docker-compose.yml</button>
+                            <button class="dtab-btn" data-tab="cmds">Build Commands</button>
+                        </div>
+                        <div class="dtab-panel">
+                            <div class="dtab-content dt-show" id="dtab-dockerfile">
+                                <pre>FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-runtime
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update &amp;&amp; apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/ ./src/
+COPY models/generator.pt ./models/generator.pt
+COPY yolov8n.pt .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"]</pre>
+                            </div>
+                            <div class="dtab-content" id="dtab-requirements">
+                                <pre>torch>=2.2.0
+torchvision>=0.17.0
+rasterio>=1.3.0
+numpy>=1.24.0
+scipy>=1.10.0
+fastapi>=0.100.0
+uvicorn>=0.22.0
+python-multipart>=0.0.6
+ultralytics>=8.1.0
+redis>=5.0.0
+SQLAlchemy>=2.0.0
+psycopg2-binary>=2.9.0</pre>
+                            </div>
+                            <div class="dtab-content" id="dtab-compose">
+                                <pre>version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://cache:6379/0
+      - DATABASE_URL=sqlite:///./iris.db
+    volumes:
+      - ./data:/app/data
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    depends_on:
+      - cache
+
+  cache:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:</pre>
+                            </div>
+                            <div class="dtab-content" id="dtab-cmds">
+                                <pre># Build the unified GPU stack
+docker compose build
+
+# Run the backend API &amp; Redis cache in background
+docker compose up -d
+
+# Verify services are running
+docker compose ps
+
+# Inspect API logs
+docker compose logs -f backend</pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- API Accordion -->
+            <section class="api-accordion-section" style="margin-top: 1.5rem;">
+                <div class="card neon-border">
+                    <h2 class="card-title">FastAPI Endpoint Explorer</h2>
+                    <p class="section-desc">Interactive endpoint reference. Click to expand request payload structures and response schemas.</p>
+                    
+                    <div id="api-accordion" style="margin-top: 1rem;">
+                        <!-- GET /health -->
+                        <div class="acc-item">
+                            <div class="acc-head" onclick="toggleAcc(this)">
+                                <span class="acc-method m-get">GET</span>
+                                <span class="acc-path">/health</span>
+                                <span class="acc-desc">Server health check + hardware environment status</span>
+                                <svg class="acc-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4,6 8,10 12,6"/></svg>
+                            </div>
+                            <div class="acc-body">
+                                <div class="acc-inner">
+                                    <div class="acc-section">
+                                        <div class="acc-section-lbl">Response 200 OK</div>
+                                        <div class="resp-block">
+{
+  <span class="resp-key">"status"</span>: <span class="resp-str">"healthy"</span>,
+  <span class="resp-key">"model_loaded"</span>: <span class="resp-num">true</span>,
+  <span class="resp-key">"device"</span>: <span class="resp-str">"cuda"</span>,
+  <span class="resp-key">"redis_connected"</span>: <span class="resp-num">true</span>,
+  <span class="resp-key">"database_connected"</span>: <span class="resp-num">true</span>
+}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- POST /colorize -->
+                        <div class="acc-item">
+                            <div class="acc-head" onclick="toggleAcc(this)">
+                                <span class="acc-method m-post">POST</span>
+                                <span class="acc-path">/colorize</span>
+                                <span class="acc-desc">Execute super-resolution &amp; colorization pipeline</span>
+                                <svg class="acc-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4,6 8,10 12,6"/></svg>
+                            </div>
+                            <div class="acc-body">
+                                <div class="acc-inner">
+                                    <div class="acc-section">
+                                        <div class="acc-section-lbl">Request Body (multipart/form-data)</div>
+                                        <div class="param-row">
+                                            <span class="param-name">file</span>
+                                            <span class="param-type">UploadFile</span>
+                                            <span class="param-req">REQUIRED</span>
+                                            <span class="param-desc">6-channel numpy file (.npy) representing the stacked low-res input: [LR Thermal, Red, Green, Blue, NDVI, NDWI]. Dimensions: [6, H, W].</span>
+                                        </div>
+                                    </div>
+                                    <div class="acc-section">
+                                        <div class="acc-section-lbl">Response 200 OK</div>
+                                        <div class="resp-block">
+<!-- Raw image stream -->
+<span class="resp-comment">// Returns binary PNG file stream containing colorized 2x super-resolved image.</span>
+<span class="resp-comment">// Scene details and YOLOv8 detections are automatically logged in SQLite / Postgres.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SECTION: GLOSSARY TAB -->
+        <div id="glossary-tab" class="tab-content">
+            <div class="workspace-grid">
+                <!-- Technical Glossary -->
+                <section class="glossary-section">
+                    <div class="card neon-border">
+                        <h2 class="card-title">Technical Glossary &amp; Definitions</h2>
+                        <p class="section-desc">Key deep learning and remote sensing terms. Hover over terms across the dashboard to trigger definitions dynamically.</p>
+                        
+                        <div class="glossary-grid" style="margin-top: 1rem;">
+                            <div class="glossary-item">
+                                <abbr title="Generative Adversarial Network — a generator network creates data, while a discriminator scores its realism. They train in competition, forcing realistic textures.">GAN</abbr>
+                                <p>A neural framework where a Generator synthesizes realistic outputs (e.g. converting single-band thermal into optical RGB) and a Discriminator tries to distinguish generated imagery from real targets.</p>
+                            </div>
+                            <div class="glossary-item">
+                                <abbr title="Super-Resolution — deep learning methods that upscale spatial dimensions while reconstructing fine detail. In IRIS, this scales low-res 200m thermal to native 100m grids.">Super-Resolution</abbr>
+                                <p>The process of increasing the spatial resolution of an image by reconstructing high-frequency details. In this project, upscaling the coarse 200m downsampled Thermal Infrared (TIR) input back to a sharp 100m native equivalent.</p>
+                            </div>
+                            <div class="glossary-item">
+                                <abbr title="Lov&aacute;sz-Softmax Loss — a mathematically rigorous loss function that directly optimizes the Intersection-over-Union (IoU) segmentation metric in neural networks, preserving shape boundaries.">Lov&aacute;sz-Softmax</abbr>
+                                <p>A specialized loss function that directly optimizes the Intersection-over-Union (IoU) segmentation metric. Ensures sharp borders between geographic segments (like urban buildings and water bodies).</p>
+                            </div>
+                            <div class="glossary-item">
+                                <abbr title="PatchGAN Discriminator — an adversarial classifier that evaluates the realism of local N x N patches inside an image rather than producing a single global real/fake score, promoting crisp textures.">PatchGAN</abbr>
+                                <p>A discriminator architecture that classifies N x N local patches in an image rather than producing a single global score, preserving sharp high-frequency textures.</p>
+                            </div>
+                            <div class="glossary-item">
+                                <abbr title="Normalized Difference Vegetation Index — a normalized index computed from Red and NIR channels measuring vegetation density and health (+1.0 represents dense forest).">NDVI</abbr>
+                                <p>Normalized Difference Vegetation Index. A standardized index to measure green vegetation density, calculated from Red and Near-Infrared bands.</p>
+                            </div>
+                            <div class="glossary-item">
+                                <abbr title="Normalized Difference Water Index — a normalized index computed from Green and NIR/SWIR channels measuring surface moisture and outlining water bodies.">NDWI</abbr>
+                                <p>Normalized Difference Water Index. A satellite index used to monitor changes in surface water bodies and moisture levels, calculated from Green and Near-Infrared bands.</p>
+                            </div>
+                            <div class="glossary-item">
+                                <abbr title="Meteorological and Oceanographic Satellite Data Archival Centre — ISRO's primary weather data portal, archiving INSAT-3D/3DR geostationary datasets.">MOSDAC</abbr>
+                                <p>Meteorological and Oceanographic Satellite Data Archival Centre. ISRO's data portal responsible for archiving weather and climate satellite data, including INSAT-3D/3DR collections.</p>
+                            </div>
+                            <div class="glossary-item">
+                                <abbr title="United States Geological Survey — scientific agency providing official Landsat satellite data products.">USGS</abbr>
+                                <p>United States Geological Survey. The primary scientific agency of the United States, providing the official Landsat satellite data catalog.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- References & Citations -->
+                <section class="references-section">
+                    <div class="card neon-border">
+                        <h2 class="card-title">Academic &amp; Remote Sensing Citations</h2>
+                        <p class="section-desc">Key literature, datasets, and methods that establish the scientific foundation of the IRIS model.</p>
+                        
+                        <ul class="citations-list" style="margin-top: 1rem;">
+                            <li>
+                                <span class="cite-num">[1]</span>
+                                <div class="cite-body">
+                                    <div class="cite-title">Gorelick et al. Google Earth Engine: Planetary-Scale Geospatial Analysis for Everyone.</div>
+                                    <div class="cite-journal">Remote Sensing of Environment, 2017. <a href="https://doi.org/10.1016/j.rse.2017.05.010" target="_blank">DOI link</a></div>
+                                </div>
+                            </li>
+                            <li>
+                                <span class="cite-num">[2]</span>
+                                <div class="cite-body">
+                                    <div class="cite-title">Wang et al. ESRGAN: Enhanced Super-Resolution Generative Adversarial Networks.</div>
+                                    <div class="cite-journal">European Conference on Computer Vision (ECCV) Workshops, 2018. <a href="https://arxiv.org/abs/1809.00219" target="_blank">arXiv link</a></div>
+                                </div>
+                            </li>
+                            <li>
+                                <span class="cite-num">[3]</span>
+                                <div class="cite-body">
+                                    <div class="cite-title">Isola et al. Image-to-Image Translation with Conditional Adversarial Networks.</div>
+                                    <div class="cite-journal">IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2017. <a href="https://arxiv.org/abs/1611.07004" target="_blank">arXiv link</a></div>
+                                </div>
+                            </li>
+                            <li>
+                                <span class="cite-num">[4]</span>
+                                <div class="cite-body">
+                                    <div class="cite-title">Berman et al. The Lov&aacute;sz-Softmax loss: A tractable surrogate for the optimization of the intersection-over-union measure in neural networks.</div>
+                                    <div class="cite-journal">IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2018. <a href="https://arxiv.org/abs/1705.08790" target="_blank">arXiv link</a></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Config Slide-Out Modal -->
+    <div id="config-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Backend Connectivity</h3>
+                <button id="modal-close" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="input-label" for="api-endpoint">FastAPI Colorize Endpoint</label>
+                    <input type="text" id="api-endpoint" class="text-input" value="http://localhost:8000/colorize">
+                </div>
+                <div class="form-group">
+                    <button id="test-connection-btn" class="btn secondary-btn">Test Connection</button>
+                </div>
+                <div id="connection-feedback" class="feedback-msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script file -->
+    <script src="app.js"></script>
+</body>
+</html>
