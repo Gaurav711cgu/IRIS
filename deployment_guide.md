@@ -73,14 +73,15 @@ import subprocess
 import time
 
 # --- A. Setup Cloud DB Variables (Replace with your actual keys) ---
-os.environ["DATABASE_URL"] = "postgresql://postgres.[project-id]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres"
-os.environ["REDIS_URL"] = "rediss://default:[password]@[endpoint].upstash.io:6379"
+os.environ["PYTHONPATH"] = os.getcwd()
+os.environ["DATABASE_URL"] = "postgresql://postgres:ISROIRIS%40250626@db.prcufhzhaxsjsdjzbrks.supabase.co:5432/postgres"
+os.environ["REDIS_URL"] = "rediss://default:gQAAAAAAAac4AAIgcDJjZWQ4NWQ3M2Q5ZTI0ZDEyYWM3ZGRlMjc1ZjAyZjRkOQ@renewing-antelope-108344.upstash.io:6379"
 
 # --- B. Launch FastAPI Server in Background ---
 print("Starting FastAPI Backend...")
 log_file = open("fastapi_server.log", "w")
 server_proc = subprocess.Popen(
-    ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"],
+    ["python", "-m", "uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"],
     stdout=log_file, stderr=log_file
 )
 time.sleep(5)  # Wait for server to load weights
