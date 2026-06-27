@@ -22,6 +22,16 @@ except ImportError:
 
 app = FastAPI(title="Project IRIS - Satellite Thermal Super-Resolution & Colorization API")
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 MODEL_PATH = "models/generator.pt"
 
 # 1. Initialize models and device
